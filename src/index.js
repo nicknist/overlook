@@ -6,27 +6,33 @@ import $ from 'jquery';
 
 // An example of how you tell webpack to use a CSS (SCSS) file
 import './css/base.scss';
+import Bookings from './Bookings.js';
 
 // An example of how you tell webpack to use an image (also need to link to it in the index.html)
 import './images/turing-logo.png'
 
-// console.log('This is the JavaScript entry file - your code begins here.');
-
 let userData = fetch('https://fe-apps.herokuapp.com/api/v1/overlook/1904/users/users').then(response => response.json()).then(data => data.users);
 let roomData = fetch('https://fe-apps.herokuapp.com/api/v1/overlook/1904/rooms/rooms').then(response => response.json()).then(data => data.rooms);
 let bookingData = fetch('https://fe-apps.herokuapp.com/api/v1/overlook/1904/bookings/bookings').then(response => response.json()).then(data => data.bookings);
+var booking;
+let currentDate = findCurrentDate();
 
 Promise.all([userData, roomData, bookingData]).then(data => {
   userData = data[0];
   roomData = data[1];
   bookingData = data[2];
 }).then(() => {
-  // console.log(userData);
-  // console.log(roomData);
-  // console.log(bookingData);
+    booking = new Bookings(roomData, bookingData);
+    $('body').click(checkButtons);
 })
 
-$('body').click(checkButtons);
+//userData -> new Customer (id - > they'll give you on login, name - > userData.find(user => user.id === id).name)
+//manager -> updatesCurrent Customer ->
+//would the manager be able to 'act as customer?'
+//new Manager(currentCustomerID, currentCustomerName)
+//
+
+// $('body').click(checkButtons);
 
 function checkButtons(event) {
   if (event.target.id === 'login-button') {
@@ -36,7 +42,7 @@ function checkButtons(event) {
     changeToManagerPage();
   }
   if (event.target.id === 'login-button' && checkLogin() === false) {
-    changeToCustomerPage();
+    changeToCustomerPage(getCustomerID());
   }
   if (event.target.id === 'logout-button') {
     changeToLoginPage();
@@ -46,12 +52,15 @@ function checkButtons(event) {
 function changeToManagerPage() {
   $('main').html(`<article class="manager">
     <h2>available rooms:</h2>
+    <ul class="room-list">${getRoomsAvailableData()}</ul>
   </article>
   <article class="manager">
     <h2>today's revenue:</h2>
+    <p>$${booking.totalRevenue(currentDate)}</p>
   </article>
   <article class="manager">
     <h2>percent of rooms occupied:</h2>
+    <p>${booking.percentOfRoomsOccupied(currentDate)}%</p>
   </article>`);
   $('body').addClass('manager-page');
   $('header').prepend(`<div class="input-box">
@@ -61,12 +70,22 @@ function changeToManagerPage() {
   $('header').append(`<button id="logout-button" type="button" class="logout-button" name="Logout Button">logout</button>`);
 }
 
+function getRoomsAvailableData() {
+  let string = '';
+  booking.roomsAvailable(currentDate).forEach(room => {
+    string += `<li>Room #${room.number} is available. It is a ${room.roomType} with a ${room.bedSize.toUpperCase()} bed</li>`
+  })
+  return string;
+}
+
 function changeToCustomerPage() {
   $('main').html(`<article class="manager">
     <h2>past bookings:</h2>
+    <ul class="room-list">${booking.findPastCustomerBookings(getCustomerID(), currentDate)}</ul>
   </article>
   <article class="manager">
     <h2>upcoming bookings:</h2>
+    <p>${booking.findUpcomingCustomerBookings(getCustomerID(), currentDate)}</p>
   </article>
   <article class="manager">
     <h2>total spent:</h2>
@@ -74,6 +93,20 @@ function changeToCustomerPage() {
   $('body').addClass('customer-page');
   $('header').prepend(`<button id="booking-button" type="button" name="Customer Booking">new booking</button>`);
   $('header').append(`<button id="logout-button" type="button" class="logout-button" name="Logout Button">logout</button>`);
+}
+
+function getPastDataString() {
+  let string = '';
+  booking.findPastCustomerBookings(getCustomerID(), currentDate).forEach(book => {
+    string += `<li>You have booked room #${book.roomNumber} on ${book.date}</li>`
+  });
+  console.log(string);
+  return string;
+}
+
+function getCustomerID() {
+  //this will need to be dynamic eventually and get the current customerID - possibly just make a global variable cuz yolo
+  return 30;
 }
 
 function changeToLoginPage() {
@@ -129,4 +162,9 @@ function addErrors() {
     $('#password-input').addClass('error-box');
     $('#password-check').removeClass('hidden');
   }
+}
+
+function findCurrentDate() {
+  //eventually make this dynamic and grab the current date with a Date object
+  return '2019/11/02';
 }
