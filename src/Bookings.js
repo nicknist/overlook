@@ -13,7 +13,6 @@ class Bookings {
   }
 
   totalRevenue(date) {
-    console.log(this.bookingData.filter(booking => booking.date === date));
     return this.bookingData.filter(booking => booking.date === date).reduce((acc, sum) => {
       let priceForRoom = Math.floor(this.roomData.find(room => room.number === sum.roomNumber).costPerNight);
       return acc += priceForRoom;
@@ -26,13 +25,15 @@ class Bookings {
   }
 
   findPastCustomerBookings(userID, date) {
-    let thing =  this.bookingData.filter(booking => booking.userID === userID && date <= booking.date);
-    console.log(thing);
+    return this.bookingData.filter(booking => booking.userID === userID && date > booking.date);
   }
 
   findUpcomingCustomerBookings(userID, date) {
-    let thing =  this.bookingData.filter(booking => booking.userID === userID && date > booking.date);
-    console.log(thing);
+    return this.bookingData.filter(booking => booking.userID === userID && date <= booking.date);
+  }
+
+  findCustomerBookings(userID) {
+    return this.bookingData.filter(booking => booking.userID === userID);
   }
 
   totalAmountCustomerSpent(userID) {

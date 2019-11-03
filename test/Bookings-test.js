@@ -1,7 +1,7 @@
 const chai = require('chai');
 const expect = chai.expect;
 
-import Booking from '../src/Bookings'
+import Booking from '../src/Bookings';
 
 describe('Bookings', () => {
   let rooms;
@@ -189,12 +189,42 @@ describe('Bookings', () => {
   });
 
   it('should be able to find the percent of rooms occupied for a date', () => {
-    //math floor that ish
     expect(booking.percentOfRoomsOccupied('2019/11/22')).to.equal(50);
   });
 
+  it('should be able to find all past customer bookings with an ID and current date', () => {
+    expect(booking.findPastCustomerBookings(2, '2019/11/10')).to.deep.equal([
+      {
+        id: 1572293130160,
+        userID: 2,
+        date: "2019/11/06",
+        roomNumber: 5,
+        roomServiceCharges: [ ]
+      }
+    ]);
+  });
+
+  it('should be able to find all upcoming customer bookings with an ID and current date', () => {
+    expect(booking.findUpcomingCustomerBookings(2, '2019/11/10')).to.deep.equal([
+      {
+        id: 1572293130159,
+        userID: 2,
+        date: "2019/11/12",
+        roomNumber: 2,
+        roomServiceCharges: [ ]
+      },
+      {
+        id: 1572293130160,
+        userID: 2,
+        date: "2019/12/01",
+        roomNumber: 3,
+        roomServiceCharges: [ ]
+      }
+    ]);
+  });
+
   it('should be able to find all customer bookings with an ID', () => {
-    expect(booking.findCustomerBookings(2)).to.deep.equal([
+    expect(booking.findCustomerBookings(2, '2019/11/10')).to.deep.equal([
       {
         id: 1572293130159,
         userID: 2,
