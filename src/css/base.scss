@@ -1,4 +1,6 @@
 /* This is an example of using Sass, otherwise plain CSS works too*/
+@import '~js-datepicker/src/datepicker';
+
 $primary-color: #99D9DA;
 $secondary-color: #6c9c9d;
 $font-color: hsla(0, 0%, 100%, 1);
@@ -121,7 +123,7 @@ h2 {
   background-color: $secondary-color;
 }
 
-#booking-button {
+.header-booking {
   margin: 0px 2% 0px 5%;
   width: 18%;
 }
@@ -136,4 +138,23 @@ h2 {
 
 .room-list {
   list-style: none;
+}
+
+.chart {
+  height: fit-content;
+}
+
+.find-customer {
+  font-size: 1.2em;
+  width: 30%;
+  margin: 0px;
+  height: auto;
+}
+
+input[type="radio"]:hover {
+  cursor: pointer;
+}
+
+.go-back {
+  width: 60%;
 }
