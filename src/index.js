@@ -11,11 +11,12 @@ import datepicker from 'js-datepicker';
 import './css/base.scss';
 import Bookings from './Bookings.js';
 import Customer from './Customer.js';
+import Manager from './Manager.js';
 
 // An example of how you tell webpack to use an image (also need to link to it in the index.html)
-import './images/turing-logo.png';
-
-
+import './images/customer-page.jpg';
+import './images/hostel.jpg';
+import './images/manager-page.jpg';
 
 
 let userData = fetch('https://fe-apps.herokuapp.com/api/v1/overlook/1904/users/users').then(response => response.json()).then(data => data.users);
@@ -23,7 +24,9 @@ let roomData = fetch('https://fe-apps.herokuapp.com/api/v1/overlook/1904/rooms/r
 let bookingData = fetch('https://fe-apps.herokuapp.com/api/v1/overlook/1904/bookings/bookings').then(response => response.json()).then(data => data.bookings);
 
 var booking;
+var manager;
 var currentCustomer;
+let currentCustomerID = 30;
 let currentDate = findCurrentDate();
 
 Promise.all([userData, roomData, bookingData]).then(data => {
@@ -35,24 +38,16 @@ Promise.all([userData, roomData, bookingData]).then(data => {
     $('body').click(checkButtons);
 })
 
-//userData -> new Customer (id - > they'll give you on login, name - > userData.find(user => user.id === id).name)
-//manager -> updatesCurrent Customer ->
-//would the manager be able to 'act as customer?'
-//new Manager(currentCustomerID, currentCustomerName)
-//
-
-// $('body').click(checkButtons);
-
 function checkButtons(event) {
   if (event.target.id === 'login-button') {
     addErrors();
   }
   if (event.target.id === 'login-button' && checkLogin()) {
+    manager = new Manager(booking.findCustomerBookings(currentCustomerID), currentCustomerID, userData.find(data => currentCustomerID === data.id).name, userData);
     changeToManagerPage();
   }
   if (event.target.id === 'login-button' && checkLogin() === false) {
-    let customerID = getCustomerID();
-    currentCustomer = new Customer(booking.findCustomerBookings(customerID), customerID, userData.find(data => customerID === data.id).name)
+    currentCustomer = new Customer(booking.findCustomerBookings(currentCustomerID), currentCustomerID, userData.find(data => currentCustomerID === data.id).name)
     changeToCustomerPage(currentCustomer.name);
   }
   if (event.target.id === 'logout-button') {
@@ -69,6 +64,15 @@ function checkButtons(event) {
   }
   if (event.target.id === 'choose-room') {
     bookRoom();
+  }
+  if (event.target.id === 'search-customer') {
+    checkCustomer();
+  }
+  if (event.target.id === 'delete-booking') {
+    deleteBookingMenu();
+  }
+  if (event.target.id === 'delete-button') {
+    deleteBooking();
   }
 }
 
@@ -90,6 +94,7 @@ function changeToManagerPage() {
     <label for="user-search" class="initial-text">search:</label>
     <input id="user-search" type="text" name="Name Search Input" placeholder="customer name">
     <button id="search-customer" type="button" class="logout-button find-customer" name="Manager search for a customer button">find</button>
+    <p id="find-user-check" class="hidden">no customer found</p>
   </div>`);
   $('header').append(`<button id="logout-button" type="button" class="logout-button" name="Logout Button">logout</button>`);
   getPercentChart();
@@ -138,13 +143,13 @@ function changeToCustomerPage(name) {
     <h2>past bookings:</h2>
     <ul class="room-list">${getPastDataString()}</ul>
   </article>
-  <article class="manager">
+  <article class="manager upcoming">
     <h2>upcoming bookings:</h2>
-    <ul class="room-list">${getUpcomingDataString()}</ul>
+    <ul class="room-list">${getUpcomingDataString('<li>', '</li>')}</ul>
   </article>
   <article class="manager">
     <h2>total spent:</h2>
-    <p>You have spent $${booking.totalAmountCustomerSpent(getCustomerID())} at Nister's Tripster for Hipsters</p>
+    <p>You have spent $${booking.totalAmountCustomerSpent(currentCustomerID)} at Nister's Tripster for Hipsters</p>
   </article>`);
   $('body').addClass('customer-page');
   $('header').html(`<button id="booking-button" type="button" name="Customer Booking" class="header-booking">new booking</button>
@@ -155,23 +160,18 @@ function changeToCustomerPage(name) {
 function getPastDataString() {
   //in the future -> sort the bookings then put them into a more read-able format
   let string = '';
-  booking.findPastCustomerBookings(getCustomerID(), currentDate).forEach(pastBooking => {
+  booking.findPastCustomerBookings(currentCustomerID, currentDate).forEach(pastBooking => {
     string += `<li>You have booked room #${pastBooking.roomNumber} on ${pastBooking.date}</li>`
   });
   return string;
 }
 
-function getUpcomingDataString() {
+function getUpcomingDataString(element, closingElement) {
   let string = '';
-  booking.findUpcomingCustomerBookings(getCustomerID(), currentDate).forEach(upcomingBooking => {
-    string += `<li>You have booked room #${upcomingBooking.roomNumber} on ${upcomingBooking.date}</li>`
+  booking.findUpcomingCustomerBookings(currentCustomerID, currentDate).forEach(upcomingBooking => {
+    string += `${element}You have booked room #${upcomingBooking.roomNumber} on ${upcomingBooking.date}${closingElement}`
   });
   return string;
-}
-
-function getCustomerID() {
-  //this will need to be dynamic eventually and get the current customerID - possibly just make a global variable cuz yolo
-  return 30;
 }
 
 function changeToBookingPage() {
@@ -252,7 +252,7 @@ function bookRoom() {
     roomNumber += split[1][2];
   }
   currentCustomer.bookRoom(currentCustomer.chosenDate, parseInt(roomNumber));
-  changeToCustomerPage();
+  changeToCustomerPage(currentCustomer.name);
   $('header').append(`<br><h1>Congrats! You Booked the Room!</h1>`);
 }
 
@@ -292,7 +292,57 @@ function addErrors() {
   }
 }
 
+function checkCustomer() {
+  let search = $(event.target.previousElementSibling).val()
+  if (findCustomer(search)) {
+    let newCustomer = findCustomer(search);
+    currentCustomerID = newCustomer.id;
+    currentCustomer = new Customer(booking.findCustomerBookings(newCustomer.id), newCustomer.id, newCustomer.name);
+    changeToCustomerPage(currentCustomer.name);
+    $('.upcoming').append(`<button id="delete-booking" type="button" class="login-button" name="Delete Booking For Customer">delete booking</button>`);
+    return;
+  }
+  $('#find-user-check').removeClass('hidden');
+  $('#user-search').addClass('error-box');
+}
+
+function findCustomer(text) {
+  let upperText = text.charAt(0).toUpperCase() + text.slice(1);
+  if (manager.customerData.find(customer => customer.name.includes(upperText))) {
+    return manager.customerData.find(customer => customer.name.includes(upperText));
+  }
+  return false;
+}
+
 function findCurrentDate() {
   //eventually make this dynamic and grab the current date with a Date object
   return '2019/11/02';
+}
+
+function deleteBookingMenu() {
+  $('main').html(`<article class="initial-login">
+  <label for="delete-booking-input" class="initial-text">upcoming bookings:</label>
+  <ul class="room-list" id="delete-booking-input">${getUpcomingDataString('<div><input name="booking" type="radio">', '</div>')}</ul>
+  <button id="delete-button" type="button" name="Delete Customer Booking" class="login-button go-back">delete booking</button>
+  </article>`);
+}
+
+function deleteBooking() {
+  let text = $('input[name="booking"]:checked').closest('div').text();
+  let split = text.split('#');
+  var date;
+  let roomNumber = split[1][0];
+  if (split[1][1]) {
+    roomNumber += split[1][1];
+  }
+  if (split[1].charAt(15)) {
+    date = split[1].slice(6, 16);
+  } else {
+    date = split[1].slice(5, 15);
+  }
+  let id = booking.returnBookingNumber(currentCustomerID, date, parseInt(roomNumber));
+  console.log(id.id);
+  // currentCustomer.bookRoom(currentCustomer.chosenDate, parseInt(roomNumber));
+  // changeToCustomerPage(currentCustomer.name);
+  // $('header').append(`<br><h1>Congrats! You Booked the Room!</h1>`);
 }

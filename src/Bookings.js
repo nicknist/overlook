@@ -43,6 +43,10 @@ class Bookings {
       return acc += priceForRoom;
     }, 0);
   }
+
+  returnBookingNumber(userID, date, roomNumber) {
+    return this.bookingData.find(booking => booking.date === date && booking.userID === userID && booking.roomNumber === roomNumber);
+  }
 }
 
 export default Bookings;
