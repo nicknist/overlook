@@ -6,8 +6,6 @@ class Customer {
     this.chosenDate = null;
   }
 
-//$('input[name="room"]:checked').parentElement.textContent
-
   bookRoom(date, roomNumber) {
     fetch('https://fe-apps.herokuapp.com/api/v1/overlook/1904/bookings/bookings', {
       method: 'POST',
