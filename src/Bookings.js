@@ -4,6 +4,7 @@ class Bookings {
     this.bookingData = bookingData;
   }
 
+
   roomsAvailable(date) {
     return this.roomData.filter(room => {
       return !this.bookingData.find(booking => {
