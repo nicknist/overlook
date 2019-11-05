@@ -342,7 +342,9 @@ function deleteBooking() {
   }
   let id = booking.returnBookingNumber(currentCustomerID, date, parseInt(roomNumber));
   console.log(id.id);
-  // currentCustomer.bookRoom(currentCustomer.chosenDate, parseInt(roomNumber));
-  // changeToCustomerPage(currentCustomer.name);
-  // $('header').append(`<br><h1>Congrats! You Booked the Room!</h1>`);
+  manager.deleteBooking(id.id);
+  //switch back to a page and give a message
+
+  changeToCustomerPage(currentCustomer.name);
+  $('header').append(`<br><h1>You canceled Booking #${id.id}</h1>`);
 }
