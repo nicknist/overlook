@@ -1,24 +1,36 @@
 const chai = require('chai');
 const expect = chai.expect;
 
+import spies from 'chai-spies';
 import bookings from '../mock-data/booking-data';
 import userData from '../mock-data/user-data';
 import Manager from '../src/Manager';
 import Bookings from '../src/Bookings';
 
+chai.use(spies);
+
 describe('Manager', () => {
   let manager;
   let booking;
   let data = [];
+  let fetchSpy;
 
   beforeEach(() => {
+    fetchSpy = chai.spy.on(global, 'fetch', () => {
+      return new Promise((resolve, reject) => {
+        resolve({message: "Data has been fetched"});
+      })
+    });
     data = [];
     booking = new Bookings(data, bookings);
     manager = new Manager(booking.findCustomerBookings(1), 1, 'Ben', userData);
   });
 
+  afterEach(() => {
+    chai.spy.restore(fetchSpy);
+  });
+
   it('should instantiate with inherited properties', () => {
-    //WRITE TEST FOR THIS WITH SPIES
     expect(manager.customerBookings).to.deep.equal(booking.findCustomerBookings(1));
     expect(manager.id).to.equal(1);
     expect(manager.name).to.equal('ben');
@@ -35,6 +47,16 @@ describe('Manager', () => {
         name: 'john adams'
       }
     ]);
+  });
+
+  it('should inherit Customer methods', () => {
+    chai.spy.on(manager, 'bookRoom', () => 'success');
+    expect(manager.bookRoom()).to.equal('success');
+  });
+
+  it('should inherit filterRooms method', () => {
+    chai.spy.on(manager, 'filterRoomsByType', () => 'success');
+    expect(manager.filterRoomsByType()).to.equal('success');
   });
 
   it('should be able to update name', () => {
@@ -75,5 +97,10 @@ describe('Manager', () => {
         roomServiceCharges: [ ]
       }
     ]);
-  })
+  });
+
+  it('should be able call use fetch deletebooking method', () => {
+    manager.deleteBooking();
+    expect(fetchSpy).to.have.been.called(1);
+  });
 })
