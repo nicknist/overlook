@@ -38,4 +38,6 @@ If given more time:
 
 
 ### ScreenShots
+#### HomePage
+![homepage.png](src/images/homepage.png)
 
