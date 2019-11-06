@@ -19,10 +19,8 @@ class Customer {
       })
     }).then(() => {
       console.log('YOU DID IT!');
-      return true;
     }).catch(() => {
       console.log('FAILURE');
-      return false;
     });
   }
 

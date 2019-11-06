@@ -9,11 +9,21 @@ describe('Customer', () => {
   let customer;
   let booking;
   let data;
+  let fetchSpy;
 
   beforeEach(() => {
-      data = [];
-      booking = new Bookings(data, bookings);
-      customer = new Customer(booking.findCustomerBookings(1), 1, 'Ben');
+    fetchSpy = chai.spy.on(global, 'fetch', () => {
+      return new Promise((resolve, reject) => {
+        resolve({message: "Data has been fetched"});
+      })
+    });
+    data = [];
+    booking = new Bookings(data, bookings);
+    customer = new Customer(booking.findCustomerBookings(1), 1, 'Ben');
+  });
+
+  afterEach(() => {
+    chai.spy.restore(fetchSpy);
   });
 
   it('should instantiate with their bookings data', () => {
@@ -96,6 +106,10 @@ describe('Customer', () => {
 
   it('should have a name property', () => {
     expect(customer.name).to.equal('ben');
-  })
+  });
 
+  it('should be able to use fetch in the bookRoom method', () => {
+    customer.bookRoom();
+    expect(fetchSpy).to.have.been.called(1);
+  });
 })

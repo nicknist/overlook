@@ -83,9 +83,9 @@ function changeToManagerPage() {
   </article>
   <article class="manager">
     <h2>today's revenue:</h2>
-    <p>$${booking.totalRevenue(currentDate)}</p>
+    <p class="money">$${booking.totalRevenue(currentDate)}</p>
   </article>
-  <article class="manager chart">
+  <article class="manager">
     <h2>percent of rooms occupied:</h2>
     <canvas id="percent-chart"></canvas>
   </article>`);
@@ -149,7 +149,7 @@ function changeToCustomerPage(name) {
   </article>
   <article class="manager">
     <h2>total spent:</h2>
-    <p>You have spent $${booking.totalAmountCustomerSpent(currentCustomerID)} at Nister's Tripster for Hipsters</p>
+    <p class="money">$${booking.totalAmountCustomerSpent(currentCustomerID)}</p>
   </article>`);
   $('body').addClass('customer-page');
   $('header').html(`<button id="booking-button" type="button" name="Customer Booking" class="header-booking">new booking</button>
@@ -182,6 +182,7 @@ function changeToBookingPage() {
     </div>
     <button id="find-date" type="button" class="login-button" name="Find Date for Booking">find date</button>
   </article>`);
+  $('body').addClass('booking-page');
   $('header').html(`<h1>welcome ${currentCustomer.name}, choose a date then a room to book</h1>`);
   const picker = datepicker('#date-input', {
     position: 'tl',
@@ -198,7 +199,8 @@ function changeToBookingPage() {
 }
 
 function changeToAvailableRoomsPage() {
-  let openingElement = `<div><input name="room" type="radio">`;
+  $('main').addClass('main-no-margin');
+  let openingElement = `<div class="choose-room"><input name="room" type="radio">`;
   if (booking.roomsAvailable(currentCustomer.chosenDate).length === 0) {
     $('main').html(`<article class="initial-login">
     <p>Sorry! There are no rooms available on that date</p>
@@ -220,12 +222,13 @@ function changeToAvailableRoomsPage() {
 function filterRooms(roomsAvailable) {
   let string = '';
   currentCustomer.filterRoomsByType(roomsAvailable).forEach(room => {
-    string += `<div><input name="room" type="radio">Room #${room.number} is available. It is a ${room.roomType} with a ${room.bedSize.toUpperCase()} bed</div>`
+    string += `<div class="choose-room"><input name="room" type="radio">Room #${room.number} is available. It is a ${room.roomType} with a ${room.bedSize.toUpperCase()} bed</div>`
   })
   $('#rooms-available').html(`${string}`);
 }
 
 function changeToLoginPage() {
+  $('main').removeClass('main-no-margin');
   $('main').html(`<article class="initial-login">
     <div id="username-box" class="input-box">
       <label for="username-input" class="initial-text">username:</label>
@@ -239,6 +242,8 @@ function changeToLoginPage() {
   </article>`);
   $('body').removeClass('manager-page');
   $('body').removeClass('customer-page');
+  $('body').removeClass('booking-page');
+  $('body').removeClass('delete-page');
   $('header').html(`<h1>NISTER'S TRIPSTER FOR HIPSTERS</h1>`);
   $('#username-box').append(`<p id="username-check" class="hidden">please enter a valid username</p>`);
   $('#password-box').append(`<p id="password-check" class="hidden">please enter a valid password</p>`);
@@ -252,16 +257,20 @@ function bookRoom() {
     roomNumber += split[1][2];
   }
   currentCustomer.bookRoom(currentCustomer.chosenDate, parseInt(roomNumber));
-  changeToCustomerPage(currentCustomer.name);
-  $('header').append(`<br><h1>Congrats! You Booked the Room!</h1>`);
+  $('main').html(`<article class="initial-login">
+    <h1>You booked room #${roomNumber} on ${moment(currentCustomer.chosenDate).format("dddd, MMMM Do YYYY")}!</h1>
+    <button id="logout-button" type="button" class="login-button" name="Welcome Button">dope</button>
+  </article>`);
 }
 
 function checkLogin() {
-  //will later need to check if customer# is equal to 1 through 100.... that's a future nick problem
+  let customer = $('#username-input').val();
+  let customerNumber = parseInt(customer.slice(8, 10));
   if ($('#username-input').val() === 'manager' && $('#password-input').val() === 'overlook2019') {
     removeErrors();
     return true;
-  } else if ($('#username-input').val() === 'customer' && $('#password-input').val() === 'overlook2019') {
+  } else if ($('#username-input').val().includes('customer') && $('#password-input').val() === 'overlook2019' && customerNumber < 51) {
+    currentCustomerID = customerNumber;
     removeErrors();
     return false;
   } else {
@@ -315,16 +324,18 @@ function findCustomer(text) {
 }
 
 function findCurrentDate() {
-  //eventually make this dynamic and grab the current date with a Date object
-  return '2019/11/02';
+  let currentDate = moment(Date.now()).format('YYYY/MM/DD')
+  return currentDate;
 }
 
 function deleteBookingMenu() {
+  $('main').addClass('main-no-margin');
   $('main').html(`<article class="initial-login">
   <label for="delete-booking-input" class="initial-text">upcoming bookings:</label>
-  <ul class="room-list" id="delete-booking-input">${getUpcomingDataString('<div><input name="booking" type="radio">', '</div>')}</ul>
+  <ul class="room-list" id="delete-booking-input">${getUpcomingDataString('<div class="choose-room"><input name="booking" type="radio">', '</div>')}</ul>
   <button id="delete-button" type="button" name="Delete Customer Booking" class="login-button go-back">delete booking</button>
   </article>`);
+  $('body').addClass('delete-page');
 }
 
 function deleteBooking() {
@@ -341,10 +352,9 @@ function deleteBooking() {
     date = split[1].slice(5, 15);
   }
   let id = booking.returnBookingNumber(currentCustomerID, date, parseInt(roomNumber));
-  console.log(id.id);
   manager.deleteBooking(id.id);
-  //switch back to a page and give a message
-
-  changeToCustomerPage(currentCustomer.name);
-  $('header').append(`<br><h1>You canceled Booking #${id.id}</h1>`);
+  $('main').html(`<article class="initial-login">
+    <h1>You canceled Booking #${id.id}</h1>
+    <button id="logout-button" type="button" class="login-button" name="Welcome Button">dope</button>
+  </article>`);
 }
