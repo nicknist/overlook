@@ -147,7 +147,8 @@ h2 {
 
 .room-list {
   list-style: none;
-  overflow: scroll;
+  overflow-y: scroll;
+  overflow-x: hidden;
 }
 
 li {
@@ -193,4 +194,56 @@ input[type="radio"]:hover {
 
 .main-no-margin {
   margin-top: 1%;
+}
+
+#blockColorblindContent {
+  display: none;
+}
+
+@media (max-width: 860px) {
+  .room-list {
+    overflow: auto;
+  }
+  main {
+    height: 100%;
+    margin: 2%;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+  }
+  article {
+    margin: 20px 0px;
+    width: 80%;
+  }
+  header button {
+    font-size: .8em;
+  }
+  div {
+    width: auto;
+  }
+  .manager {
+    margin: 20px 0px;
+    width: 80%;
+    height: auto;
+  }
+  header .input-box {
+    flex-direction: column;
+  }
+  #user-search {
+    width: auto;
+  }
+}
+
+@media (max-width: 550px) {
+  header {
+    height: auto;
+    flex-direction: column;
+    button {
+      width: auto;
+      font-size: 1em;
+    }
+  }
+  h1 {
+    font-size: 1.5em;
+  }
 }

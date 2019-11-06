@@ -183,9 +183,9 @@ function changeToBookingPage() {
     <button id="find-date" type="button" class="login-button" name="Find Date for Booking">find date</button>
   </article>`);
   $('body').addClass('booking-page');
-  $('header').html(`<h1>welcome ${currentCustomer.name}, choose a date then a room to book</h1>`);
+  $('header').html(`<h1>welcome ${currentCustomer.name}</h1>`);
   const picker = datepicker('#date-input', {
-    position: 'tl',
+    position: 'br',
     customDays: ['S', 'M', 'T', 'W', 'Th', 'F', 'S'],
     customMonths: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
     overlayButton: 'Choose',
