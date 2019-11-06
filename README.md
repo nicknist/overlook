@@ -41,3 +41,9 @@ If given more time:
 #### HomePage
 ![homepage.png](src/images/homepage.png)
 
+#### Customer Page
+![customerpage.png](src/images/customer.png)
+
+#### Manager Page
+![managerpage.png](src/images/manager.png)
+
